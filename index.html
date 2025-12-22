@@ -3,6 +3,10 @@
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>VMTS Horarios Pro - Edición Institucional</title>  
+    <div style="margin:15px 0;">
+  <button onclick="guardarDatos()">💾 Guardar</button>
+  <button onclick="exportarExcel()">📊 Exportar a Excel</button>
+</div>
     <script src="https://cdn.tailwindcss.com"></script>  
     <script src="https://unpkg.com/lucide@latest"></script>  
     <style>  
@@ -28,6 +32,36 @@
 </style>
 
 </head>  
+<script>
+/* ===== GUARDAR DATOS ===== */
+function guardarDatos() {
+    const datos = document.body.innerHTML;
+    localStorage.setItem("vmts_horarios", datos);
+    alert("Datos guardados correctamente.");
+}
+
+/* ===== CARGAR DATOS ===== */
+window.onload = function() {
+    const datosGuardados = localStorage.getItem("vmts_horarios");
+    if (datosGuardados) {
+        document.body.innerHTML = datosGuardados;
+    }
+}
+
+/* ===== EXPORTAR A EXCEL ===== */
+function exportarExcel() {
+    let texto = "";
+    document.querySelectorAll("input, select").forEach(el => {
+        texto += el.value + "\t";
+    });
+
+    const blob = new Blob([texto], { type: "application/vnd.ms-excel" });
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = "VMTS_Horarios.xls";
+    enlace.click();
+}
+</script>
 <body>  
     <div id="root"></div>  <script type="module">  
     import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';  
