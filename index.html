@@ -35,17 +35,27 @@
 <script>
 /* ===== GUARDAR DATOS ===== */
 function guardarDatos() {
-    const datos = document.body.innerHTML;
-    localStorage.setItem("vmts_horarios", datos);
+    const datos = {};
+
+    document.querySelectorAll("input, select").forEach(el => {
+        datos[el.id || el.name] = el.value;
+    });
+
+    localStorage.setItem("vmts_horarios_datos", JSON.stringify(datos));
     alert("Datos guardados correctamente.");
 }
 
 /* ===== CARGAR DATOS ===== */
 window.onload = function() {
-    const datosGuardados = localStorage.getItem("vmts_horarios");
-    if (datosGuardados) {
-        document.body.innerHTML = datosGuardados;
-    }
+    const datos = JSON.parse(localStorage.getItem("vmts_horarios_datos"));
+    if (!datos) return;
+
+    document.querySelectorAll("input, select").forEach(el => {
+        const key = el.id || el.name;
+        if (datos[key] !== undefined) {
+            el.value = datos[key];
+        }
+    });
 }
 
 /* ===== EXPORTAR A EXCEL ===== */
