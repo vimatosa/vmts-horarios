@@ -1,391 +1,1 @@
-
-<!DOCTYPE html>  <html lang="es">  
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VMTS Horarios Pro - Edición Institucional</title>
-
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-512.png">
-    <meta name="theme-color" content="#4f46e5">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-
-</head>  
-    <style>
-    <div style="margin:15px 0;">
-  <button onclick="guardarDatos()">💾 Guardar</button>
-  <button onclick="exportarExcel()">📊 Exportar a Excel</button>
-</div>
-    <script src="https://cdn.tailwindcss.com"></script>  
-    <script src="https://unpkg.com/lucide@latest"></script>  
-    <style>  
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');  
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }  @media print {  
-        .no-print { display: none !important; }  
-        body { background: white !important; padding: 0 !important; margin: 0 !important; }  
-        .print-container { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 10mm !important; }  
-        table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }  
-        th, td { border: 1px solid #000 !important; font-size: 8pt !important; padding: 4px !important; }  
-        .bg-indigo-600 { background-color: #4f46e5 !important; color: white !important; -webkit-print-color-adjust: exact; }  
-        select { appearance: none !important; border: none !important; background: transparent !important; width: 100% !important; color: black !important; font-weight: bold !important; }  
-        .signature-box { border-top: 1px solid black !important; }  
-    }  
-
-    .custom-select {  
-        appearance: none;  
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236366f1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");  
-        background-repeat: no-repeat;  
-        background-position: right 0.1rem center;  
-        background-size: 0.6rem;  
-    }  
-</style>
-<script>
-/* ===== GUARDAR DATOS ===== */
-function guardarDatos() {
-    const datos = {};
-
-    document.querySelectorAll("input, select").forEach(el => {
-        datos[el.id || el.name] = el.value;
-    });
-
-    localStorage.setItem("vmts_horarios_datos", JSON.stringify(datos));
-    alert("Datos guardados correctamente.");
-}
-
-/* ===== CARGAR DATOS ===== */
-window.onload = function() {
-    const datos = JSON.parse(localStorage.getItem("vmts_horarios_datos"));
-    if (!datos) return;
-
-    document.querySelectorAll("input, select").forEach(el => {
-        const key = el.id || el.name;
-        if (datos[key] !== undefined) {
-            el.value = datos[key];
-        }
-    });
-}
-
-/* ===== EXPORTAR A EXCEL ===== */
-function exportarExcel() {
-    let filas = [];
-    document.querySelectorAll("input, select").forEach(el => {
-        filas.push(el.value);
-    });
-
-    let csv = filas.join(",") + "\n";
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const enlace = document.createElement("a");
-    enlace.href = URL.createObjectURL(blob);
-    enlace.download = "VMTS_Horarios.csv";
-    enlace.click();
-}
-</script>
-<body>  
-    <div id="root"></div>  <script type="module">  
-    import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';  
-    import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';  
-
-    const App = () => {  
-        const AUTHOR = "Dr. Víctor Manuel Torreblanca Sánchez";  
-          
-        const MATERIAS = [  
-            "LENGUA MATERNA", "MATEMÁTICAS", "INGLÉS", "CIENCIAS (BIO)", "CIENCIAS (FÍS)",   
-            "CIENCIAS (QUÍ)", "HISTORIA", "GEOGRAFÍA", "FORMACIÓN CÍVICA", "ARTES",   
-            "EDUCACIÓN FÍSICA", "TECNOLOGÍA", "VIDA SALUDABLE", "SOCIOEMOCIONAL", "CODISEÑO"  
-        ];  
-
-        const [view, setView] = useState('main');   
-        const [currentGrade, setCurrentGrade] = useState('1');  
-        const [currentGroup, setCurrentGroup] = useState('A');  
-          
-        const [teacherList, setTeacherList] = useState(() => {  
-            const saved = localStorage.getItem('vmts_v7_teachers');  
-            return saved ? JSON.parse(saved) : ["POR ASIGNAR"];  
-        });  
-
-        const [config, setConfig] = useState(() => {  
-            const saved = localStorage.getItem('vmts_v7_config');  
-            return saved ? JSON.parse(saved) : {  
-                startTime: "07:00",  
-                duration: 50,  
-                numClases: 7,  
-                recesos: [{ modulo: 3, duracion: 20 }]  
-            };  
-        });  
-
-        const [schoolData, setSchoolData] = useState(() => {  
-            const saved = localStorage.getItem('vmts_v7_school_data');  
-            return saved ? JSON.parse(saved) : { nombre: "ESCUELA SECUNDARIA TÉCNICA", talleres: {} };  
-        });  
-
-        const [horarios, setHorarios] = useState(() => {  
-            const saved = localStorage.getItem('vmts_v7_horarios');  
-            return saved ? JSON.parse(saved) : {};  
-        });  
-
-        useEffect(() => {  
-            localStorage.setItem('vmts_v7_teachers', JSON.stringify(teacherList));  
-            localStorage.setItem('vmts_v7_config', JSON.stringify(config));  
-            localStorage.setItem('vmts_v7_horarios', JSON.stringify(horarios));  
-            localStorage.setItem('vmts_v7_school_data', JSON.stringify(schoolData));  
-        }, [teacherList, config, horarios, schoolData]);  
-
-        useEffect(() => { if (window.lucide) window.lucide.createIcons(); });  
-
-        const scheduleTimes = useMemo(() => {  
-            let times = [];  
-            let current = new Date(`2000-01-01T${config.startTime}:00`);  
-            for (let i = 1; i <= config.numClases; i++) {  
-                const start = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });  
-                let end = new Date(current.getTime() + config.duration * 60000);  
-                const endStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });  
-                times.push({ start, end: endStr, modulo: i });  
-                current = new Date(end.getTime());  
-                const r = config.recesos.find(rec => rec.modulo === i);  
-                if (r) current = new Date(current.getTime() + r.duracion * 60000);  
-            }  
-            return times;  
-        }, [config]);  
-
-        const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];  
-        const groupId = `${currentGrade}-${currentGroup}`;  
-
-        const updateCell = (day, mod, field, value) => {  
-            const cellId = `${day}-${mod}`;  
-            setHorarios(prev => ({  
-                ...prev,  
-                [groupId]: {  
-                    ...(prev[groupId] || {}),  
-                    [cellId]: {  
-                        ...(prev[groupId]?.[cellId] || { materia: "", maestro: "" }),  
-                        [field]: value  
-                    }  
-                }  
-            }));  
-        };  
-
-        const handlePrint = () => {  
-            window.print();  
-        };  
-
-        if (view === 'teachers') {  
-            return React.createElement('div', { className: "min-h-screen p-6 max-w-2xl mx-auto" }, [  
-                React.createElement('div', { className: "bg-white p-8 rounded-3xl shadow-xl border border-slate-200" }, [  
-                    React.createElement('div', { className: "flex justify-between items-center mb-6" }, [  
-                        React.createElement('h2', { className: "text-2xl font-black" }, "Plantilla Docente"),  
-                        React.createElement('button', { onClick: () => setView('main'), className: "p-2 bg-slate-100 rounded-xl" }, React.createElement('i', { 'data-lucide': "x" }))  
-                    ]),  
-                    React.createElement('div', { className: "space-y-2 mb-6 max-h-[50vh] overflow-y-auto pr-2" }, teacherList.map((t, i) => (  
-                        React.createElement('div', { key: i, className: "flex gap-2" }, [  
-                            React.createElement('input', {  
-                                value: t,  
-                                onChange: e => {  
-                                    const nl = [...teacherList];  
-                                    nl[i] = e.target.value.toUpperCase();  
-                                    setTeacherList(nl);  
-                                },  
-                                className: "flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm"  
-                            }),  
-                            React.createElement('button', {  
-                                onClick: () => setTeacherList(teacherList.filter((_, idx) => idx !== i)),  
-                                className: "p-2 text-red-400"  
-                            }, React.createElement('i', { 'data-lucide': "trash-2", className: "w-4 h-4" }))  
-                        ])  
-                    ))),  
-                    React.createElement('button', {  
-                        onClick: () => setTeacherList([...teacherList, "NUEVO DOCENTE"]),  
-                        className: "w-full py-3 border-2 border-dashed border-slate-200 text-slate-400 rounded-xl font-bold mb-4"  
-                    }, "+ Agregar Docente"),  
-                    React.createElement('button', { onClick: () => setView('main'), className: "w-full py-4 bg-slate-900 text-white rounded-2xl font-black" }, "LISTO")  
-                ])  
-            ]);  
-        }  
-
-        if (view === 'config') {  
-            return React.createElement('div', { className: "min-h-screen p-6 max-w-xl mx-auto" }, [  
-                React.createElement('div', { className: "bg-white p-8 rounded-3xl shadow-xl border border-slate-200" }, [  
-                    React.createElement('h2', { className: "text-2xl font-black mb-6" }, "Ajustes de Horario"),  
-                    React.createElement('div', { className: "space-y-6" }, [  
-                        React.createElement('div', { className: "grid grid-cols-2 gap-4" }, [  
-                            React.createElement('div', {}, [  
-                                React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase" }, "Entrada"),  
-                                React.createElement('input', { type: "time", value: config.startTime, onChange: e => setConfig({...config, startTime: e.target.value}), className: "w-full p-3 bg-slate-50 rounded-xl font-bold" })  
-                            ]),  
-                            React.createElement('div', {}, [  
-                                React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase" }, "Min. Clase"),  
-                                React.createElement('input', { type: "number", value: config.duration, onChange: e => setConfig({...config, duration: Number(e.target.value)}), className: "w-full p-3 bg-slate-50 rounded-xl font-bold" })  
-                            ])  
-                        ]),  
-                        React.createElement('div', {}, [  
-                            React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase mb-2 block" }, "Módulos"),  
-                            React.createElement('input', { type: "range", min: "1", max: "10", value: config.numClases, onChange: e => setConfig({...config, numClases: Number(e.target.value)}), className: "w-full accent-indigo-600 mb-4" }),  
-                            React.createElement('div', { className: "text-center font-black" }, config.numClases)  
-                        ]),  
-                        React.createElement('div', {}, [  
-                            React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase mb-2 block" }, "Recesos"),  
-                            React.createElement('div', { className: "space-y-2" }, config.recesos.map((r, i) => (  
-                                React.createElement('div', { key: i, className: "flex items-center gap-2 p-3 bg-indigo-50 rounded-xl" }, [  
-                                    React.createElement('span', { className: "text-[10px] font-bold text-indigo-400" }, "Tras Mod:"),  
-                                    React.createElement('input', { type: "number", value: r.modulo, onChange: e => {  
-                                        const nr = [...config.recesos];  
-                                        nr[i].modulo = Number(e.target.value);  
-                                        setConfig({...config, recesos: nr});  
-                                    }, className: "w-12 p-1 rounded font-bold" }),  
-                                    React.createElement('span', { className: "text-[10px] font-bold text-indigo-400 ml-2" }, "Min:"),  
-                                    React.createElement('input', { type: "number", value: r.duracion, onChange: e => {  
-                                        const nr = [...config.recesos];  
-                                        nr[i].duracion = Number(e.target.value);  
-                                        setConfig({...config, recesos: nr});  
-                                    }, className: "w-12 p-1 rounded font-bold" }),  
-                                    React.createElement('button', { onClick: () => setConfig({...config, recesos: config.recesos.filter((_, idx) => idx !== i)}), className: "ml-auto text-indigo-300" }, React.createElement('i', { 'data-lucide': "x", className: "w-4 h-4" }))  
-                                ])  
-                            ))),  
-                            React.createElement('button', {   
-                                onClick: () => setConfig({...config, recesos: [...config.recesos, {modulo: 1, duracion: 20}]}),  
-                                className: "text-[10px] font-black text-indigo-600 mt-2"   
-                            }, "+ AÑADIR OTRO RECESO")  
-                        ]),  
-                        React.createElement('button', { onClick: () => setView('main'), className: "w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg" }, "APLICAR CAMBIOS")  
-                    ])  
-                ])  
-            ]);  
-        }  
-
-        return React.createElement('div', { className: "min-h-screen" }, [  
-            React.createElement('nav', { className: "bg-white/90 backdrop-blur-md border-b border-slate-200 p-3 sticky top-0 z-50 no-print shadow-sm" }, [  
-                React.createElement('div', { className: "container mx-auto flex flex-wrap justify-between items-center gap-4" }, [  
-                    React.createElement('div', { className: "flex items-center gap-2" }, [  
-                        React.createElement('button', { onClick: () => setView('teachers'), className: "px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-black flex items-center gap-2" }, [React.createElement('i', { 'data-lucide': "users", className: "w-4 h-4" }), "PLANTILLA"]),  
-                        React.createElement('button', { onClick: () => setView('config'), className: "p-2 bg-slate-100 rounded-xl" }, React.createElement('i', { 'data-lucide': "settings", className: "w-4 h-4" })),  
-                    ]),  
-                    React.createElement('div', { className: "flex items-center gap-2" }, [  
-                        ['1','2','3'].map(g => React.createElement('button', {   
-                            key: g,   
-                            onClick: () => setCurrentGrade(g),  
-                            className: `px-4 py-1.5 rounded-lg text-xs font-black transition-all ${currentGrade === g ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`  
-                        }, `${g}°`)),  
-                        ['A','B','C'].map(g => React.createElement('button', {   
-                            key: g,   
-                            onClick: () => setCurrentGroup(g),  
-                            className: `px-4 py-1.5 rounded-lg text-xs font-black transition-all ${currentGroup === g ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`  
-                        }, g))  
-                    ]),  
-                    React.createElement('button', {   
-                        onClick: handlePrint,  
-                        className: "px-6 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all"   
-                    }, [React.createElement('i', { 'data-lucide': "printer", className: "w-4 h-4" }), "IMPRIMIR / PDF"])  
-                ])  
-            ]),  
-
-            React.createElement('main', { className: "container mx-auto p-4 md:p-6 print-container" }, [  
-                React.createElement('div', { className: "bg-white p-6 rounded-t-3xl border-x border-t border-slate-200" }, [  
-                    React.createElement('input', {  
-                        className: "w-full text-xl font-black text-slate-800 outline-none text-center uppercase border-b border-transparent focus:border-indigo-100 pb-2",  
-                        value: schoolData.nombre,  
-                        onChange: e => setSchoolData({...schoolData, nombre: e.target.value.toUpperCase()})  
-                    }),  
-                    React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-center" }, [  
-                        React.createElement('div', {}, [  
-                            React.createElement('label', { className: "text-[9px] font-black text-slate-400 uppercase" }, "Grado y Grupo"),  
-                            React.createElement('div', { className: "font-black text-indigo-600 text-lg" }, `${currentGrade}° "${currentGroup}"`)  
-                        ]),  
-                        React.createElement('div', {}, [  
-                            React.createElement('label', { className: "text-[9px] font-black text-slate-400 uppercase" }, "Taller / Tecnología"),  
-                            React.createElement('input', {   
-                                placeholder: "ESPECIFIQUE TALLER",  
-                                className: "text-center font-black text-slate-800 border-b-2 border-slate-100 outline-none w-full uppercase text-xs focus:border-indigo-200",  
-                                value: schoolData.talleres[groupId] || "",  
-                                onChange: e => setSchoolData({...schoolData, talleres: {...schoolData.talleres, [groupId]: e.target.value.toUpperCase()}})  
-                            })  
-                        ]),  
-                        React.createElement('div', {}, [  
-                            React.createElement('label', { className: "text-[9px] font-black text-slate-400 uppercase" }, "Ciclo Escolar"),  
-                            React.createElement('div', { className: "font-black text-slate-600 text-lg" }, "2024 - 2025")  
-                        ])  
-                    ])  
-                ]),  
-
-                React.createElement('div', { className: "bg-white border border-slate-200 overflow-hidden" }, [  
-                    React.createElement('div', { className: "overflow-x-auto" }, [  
-                        React.createElement('table', { className: "w-full border-collapse" }, [  
-                            React.createElement('thead', {}, [  
-                                React.createElement('tr', { className: "bg-slate-900 text-white" }, [  
-                                    React.createElement('th', { className: "p-3 text-[9px] font-black w-24 border-r border-white/10" }, "HORA"),  
-                                    ...days.map(d => React.createElement('th', { key: d, className: "p-3 text-[9px] font-black uppercase" }, d))  
-                                ])  
-                            ]),  
-                            React.createElement('tbody', {}, scheduleTimes.map((time, i) => {  
-                                const mod = i + 1;  
-                                const rows = [  
-                                    React.createElement('tr', { key: mod }, [  
-                                        React.createElement('td', { className: "p-2 border border-slate-100 text-center bg-slate-50/30" }, [  
-                                            React.createElement('div', { className: "text-[10px] font-black text-slate-700" }, time.start),  
-                                            React.createElement('div', { className: "text-[8px] font-bold text-slate-400" }, time.end)  
-                                        ]),  
-                                        ...days.map(day => {  
-                                            const cellData = horarios[groupId]?.[`${day}-${mod}`] || { materia: "", maestro: "" };  
-                                            return React.createElement('td', { key: day, className: "p-1 border border-slate-100 min-w-[120px]" }, [  
-                                                React.createElement('div', { className: "flex flex-col gap-1" }, [  
-                                                    React.createElement('select', {  
-                                                        value: cellData.materia,  
-                                                        onChange: e => updateCell(day, mod, 'materia', e.target.value),  
-                                                        className: "w-full p-1 text-[8px] font-black rounded border-none bg-transparent custom-select outline-none"  
-                                                    }, [  
-                                                        React.createElement('option', { value: "" }, "- MATERIA -"),  
-                                                        ...MATERIAS.map(m => React.createElement('option', { key: m, value: m }, m))  
-                                                    ]),  
-                                                    React.createElement('select', {  
-                                                        value: cellData.maestro,  
-                                                        onChange: e => updateCell(day, mod, 'maestro', e.target.value),  
-                                                        className: `w-full p-0.5 text-[7px] font-bold rounded border-none outline-none ${cellData.maestro ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-300'}`  
-                                                    }, [  
-                                                        React.createElement('option', { value: "" }, "DOCENTE..."),  
-                                                        ...teacherList.map(t => React.createElement('option', { key: t, value: t }, t))  
-                                                    ])  
-                                                ])  
-                                            ]);  
-                                        })  
-                                    ])  
-                                ];  
-                                const r = config.recesos.find(rec => rec.modulo === mod);  
-                                if (r) {  
-                                    rows.push(React.createElement('tr', { key: `r-${mod}`, className: "bg-slate-50" }, [  
-                                        React.createElement('td', { className: "p-1.5 border border-slate-200 text-center font-black text-[8px] text-slate-400" }, "RECESO"),  
-                                        React.createElement('td', { colSpan: 5, className: "p-1.5 border border-slate-200 text-center font-black text-[8px] text-slate-400 uppercase tracking-[1em]" }, `RECESO ${r.duracion} MIN`)  
-                                    ]));  
-                                }  
-                                return rows;  
-                            }))  
-                        ])  
-                    ])  
-                ]),  
-
-                React.createElement('div', { className: "p-8 bg-white border-x border-b border-slate-200 rounded-b-3xl" }, [  
-                    React.createElement('div', { className: "grid grid-cols-2 gap-32 mt-12 mb-8" }, [  
-                        React.createElement('div', { className: "text-center" }, [  
-                            React.createElement('div', { className: "border-t-2 border-slate-900 mx-auto w-64 mb-2 signature-box" }),  
-                            React.createElement('p', { className: "text-[9px] font-black text-slate-800 uppercase" }, "Subdirector Operativo")  
-                        ]),  
-                        React.createElement('div', { className: "text-center" }, [  
-                            React.createElement('div', { className: "border-t-2 border-slate-900 mx-auto w-64 mb-2 signature-box" }),  
-                            React.createElement('p', { className: "text-[9px] font-black text-slate-800 uppercase" }, "Director del Plantel")  
-                        ])  
-                    ]),  
-                    React.createElement('div', { className: "text-center mt-12" }, [  
-                        React.createElement('p', { className: "text-[7px] font-black text-slate-300 tracking-[0.2em] uppercase" }, `SISTEMA INSTITUCIONAL DE HORARIOS | ${AUTHOR}`)  
-                    ])  
-                ])  
-            ])  
-        ]);  
-    };  
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));  
-    root.render(React.createElement(App));  
-</script>
-
-</body>  
-</html>  
+<!DOCTYPE html>  <html lang="es">  <head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>VMTS Horarios Pro - Edición Institucional</title>    <link rel="manifest" href="manifest.json">    <link rel="apple-touch-icon" href="icon-512.png">    <meta name="theme-color" content="#4f46e5">    <script src="https://cdn.tailwindcss.com"></script>    <script src="https://unpkg.com/lucide@latest"></script></head>      <style>    <div style="margin:15px 0;">  <button onclick="guardarDatos()">💾 Guardar</button>  <button onclick="exportarExcel()">📊 Exportar a Excel</button></div>    <script src="https://cdn.tailwindcss.com"></script>      <script src="https://unpkg.com/lucide@latest"></script>      <style>          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');          body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }  @media print {          .no-print { display: none !important; }          body { background: white !important; padding: 0 !important; margin: 0 !important; }          .print-container { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 10mm !important; }          table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }          th, td { border: 1px solid #000 !important; font-size: 8pt !important; padding: 4px !important; }          .bg-indigo-600 { background-color: #4f46e5 !important; color: white !important; -webkit-print-color-adjust: exact; }          select { appearance: none !important; border: none !important; background: transparent !important; width: 100% !important; color: black !important; font-weight: bold !important; }          .signature-box { border-top: 1px solid black !important; }      }      .custom-select {          appearance: none;          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236366f1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");          background-repeat: no-repeat;          background-position: right 0.1rem center;          background-size: 0.6rem;      }  </style><script>/* ===== GUARDAR DATOS ===== */function guardarDatos() {    const datos = {};    document.querySelectorAll("input, select").forEach(el => {        datos[el.id || el.name] = el.value;    });    localStorage.setItem("vmts_horarios_datos", JSON.stringify(datos));    alert("Datos guardados correctamente.");}/* ===== CARGAR DATOS ===== */window.onload = function() {    const datos = JSON.parse(localStorage.getItem("vmts_horarios_datos"));    if (!datos) return;    document.querySelectorAll("input, select").forEach(el => {        const key = el.id || el.name;        if (datos[key] !== undefined) {            el.value = datos[key];        }    });}/* ===== EXPORTAR A EXCEL ===== */function exportarExcel() {    let filas = [];    document.querySelectorAll("input, select").forEach(el => {        filas.push(el.value);    });    let csv = filas.join(",") + "\n";    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });    const enlace = document.createElement("a");    enlace.href = URL.createObjectURL(blob);    enlace.download = "VMTS_Horarios.csv";    enlace.click();}</script><body>      <div id="root"></div>  <script type="module">      import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';      import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';      const App = () => {          const AUTHOR = "Dr. Víctor Manuel Torreblanca Sánchez";                    const MATERIAS = [              "LENGUA MATERNA", "MATEMÁTICAS", "INGLÉS", "CIENCIAS (BIO)", "CIENCIAS (FÍS)",               "CIENCIAS (QUÍ)", "HISTORIA", "GEOGRAFÍA", "FORMACIÓN CÍVICA", "ARTES",               "EDUCACIÓN FÍSICA", "TECNOLOGÍA", "VIDA SALUDABLE", "SOCIOEMOCIONAL", "CODISEÑO"          ];          const [view, setView] = useState('main');           const [currentGrade, setCurrentGrade] = useState('1');          const [currentGroup, setCurrentGroup] = useState('A');                    const [teacherList, setTeacherList] = useState(() => {              const saved = localStorage.getItem('vmts_v7_teachers');              return saved ? JSON.parse(saved) : ["POR ASIGNAR"];          });          const [config, setConfig] = useState(() => {              const saved = localStorage.getItem('vmts_v7_config');              return saved ? JSON.parse(saved) : {                  startTime: "07:00",                  duration: 50,                  numClases: 7,                  recesos: [{ modulo: 3, duracion: 20 }]              };          });          const [schoolData, setSchoolData] = useState(() => {              const saved = localStorage.getItem('vmts_v7_school_data');              return saved ? JSON.parse(saved) : { nombre: "ESCUELA SECUNDARIA TÉCNICA", talleres: {} };          });          const [horarios, setHorarios] = useState(() => {              const saved = localStorage.getItem('vmts_v7_horarios');              return saved ? JSON.parse(saved) : {};          });          useEffect(() => {              localStorage.setItem('vmts_v7_teachers', JSON.stringify(teacherList));              localStorage.setItem('vmts_v7_config', JSON.stringify(config));              localStorage.setItem('vmts_v7_horarios', JSON.stringify(horarios));              localStorage.setItem('vmts_v7_school_data', JSON.stringify(schoolData));          }, [teacherList, config, horarios, schoolData]);          useEffect(() => { if (window.lucide) window.lucide.createIcons(); });          const scheduleTimes = useMemo(() => {              let times = [];              let current = new Date(`2000-01-01T${config.startTime}:00`);              for (let i = 1; i <= config.numClases; i++) {                  const start = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });                  let end = new Date(current.getTime() + config.duration * 60000);                  const endStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });                  times.push({ start, end: endStr, modulo: i });                  current = new Date(end.getTime());                  const r = config.recesos.find(rec => rec.modulo === i);                  if (r) current = new Date(current.getTime() + r.duracion * 60000);              }              return times;          }, [config]);          const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];          const groupId = `${currentGrade}-${currentGroup}`;          const updateCell = (day, mod, field, value) => {              const cellId = `${day}-${mod}`;              setHorarios(prev => ({                  ...prev,                  [groupId]: {                      ...(prev[groupId] || {}),                      [cellId]: {                          ...(prev[groupId]?.[cellId] || { materia: "", maestro: "" }),                          [field]: value                      }                  }              }));          };          const handlePrint = () => {              window.print();          };          if (view === 'teachers') {              return React.createElement('div', { className: "min-h-screen p-6 max-w-2xl mx-auto" }, [                  React.createElement('div', { className: "bg-white p-8 rounded-3xl shadow-xl border border-slate-200" }, [                      React.createElement('div', { className: "flex justify-between items-center mb-6" }, [                          React.createElement('h2', { className: "text-2xl font-black" }, "Plantilla Docente"),                          React.createElement('button', { onClick: () => setView('main'), className: "p-2 bg-slate-100 rounded-xl" }, React.createElement('i', { 'data-lucide': "x" }))                      ]),                      React.createElement('div', { className: "space-y-2 mb-6 max-h-[50vh] overflow-y-auto pr-2" }, teacherList.map((t, i) => (                          React.createElement('div', { key: i, className: "flex gap-2" }, [                              React.createElement('input', {                                  value: t,                                  onChange: e => {                                      const nl = [...teacherList];                                      nl[i] = e.target.value.toUpperCase();                                      setTeacherList(nl);                                  },                                  className: "flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm"                              }),                              React.createElement('button', {                                  onClick: () => setTeacherList(teacherList.filter((_, idx) => idx !== i)),                                  className: "p-2 text-red-400"                              }, React.createElement('i', { 'data-lucide': "trash-2", className: "w-4 h-4" }))                          ])                      ))),                      React.createElement('button', {                          onClick: () => setTeacherList([...teacherList, "NUEVO DOCENTE"]),                          className: "w-full py-3 border-2 border-dashed border-slate-200 text-slate-400 rounded-xl font-bold mb-4"                      }, "+ Agregar Docente"),                      React.createElement('button', { onClick: () => setView('main'), className: "w-full py-4 bg-slate-900 text-white rounded-2xl font-black" }, "LISTO")                  ])              ]);          }          if (view === 'config') {              return React.createElement('div', { className: "min-h-screen p-6 max-w-xl mx-auto" }, [                  React.createElement('div', { className: "bg-white p-8 rounded-3xl shadow-xl border border-slate-200" }, [                      React.createElement('h2', { className: "text-2xl font-black mb-6" }, "Ajustes de Horario"),                      React.createElement('div', { className: "space-y-6" }, [                          React.createElement('div', { className: "grid grid-cols-2 gap-4" }, [                              React.createElement('div', {}, [                                  React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase" }, "Entrada"),                                  React.createElement('input', { type: "time", value: config.startTime, onChange: e => setConfig({...config, startTime: e.target.value}), className: "w-full p-3 bg-slate-50 rounded-xl font-bold" })                              ]),                              React.createElement('div', {}, [                                  React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase" }, "Min. Clase"),                                  React.createElement('input', { type: "number", value: config.duration, onChange: e => setConfig({...config, duration: Number(e.target.value)}), className: "w-full p-3 bg-slate-50 rounded-xl font-bold" })                              ])                          ]),                          React.createElement('div', {}, [                              React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase mb-2 block" }, "Módulos"),                              React.createElement('input', { type: "range", min: "1", max: "10", value: config.numClases, onChange: e => setConfig({...config, numClases: Number(e.target.value)}), className: "w-full accent-indigo-600 mb-4" }),                              React.createElement('div', { className: "text-center font-black" }, config.numClases)                          ]),                          React.createElement('div', {}, [                              React.createElement('label', { className: "text-[10px] font-black text-slate-400 uppercase mb-2 block" }, "Recesos"),                              React.createElement('div', { className: "space-y-2" }, config.recesos.map((r, i) => (                                  React.createElement('div', { key: i, className: "flex items-center gap-2 p-3 bg-indigo-50 rounded-xl" }, [                                      React.createElement('span', { className: "text-[10px] font-bold text-indigo-400" }, "Tras Mod:"),                                      React.createElement('input', { type: "number", value: r.modulo, onChange: e => {                                          const nr = [...config.recesos];                                          nr[i].modulo = Number(e.target.value);                                          setConfig({...config, recesos: nr});                                      }, className: "w-12 p-1 rounded font-bold" }),                                      React.createElement('span', { className: "text-[10px] font-bold text-indigo-400 ml-2" }, "Min:"),                                      React.createElement('input', { type: "number", value: r.duracion, onChange: e => {                                          const nr = [...config.recesos];                                          nr[i].duracion = Number(e.target.value);                                          setConfig({...config, recesos: nr});                                      }, className: "w-12 p-1 rounded font-bold" }),                                      React.createElement('button', { onClick: () => setConfig({...config, recesos: config.recesos.filter((_, idx) => idx !== i)}), className: "ml-auto text-indigo-300" }, React.createElement('i', { 'data-lucide': "x", className: "w-4 h-4" }))                                  ])                              ))),                              React.createElement('button', {                                   onClick: () => setConfig({...config, recesos: [...config.recesos, {modulo: 1, duracion: 20}]}),                                  className: "text-[10px] font-black text-indigo-600 mt-2"                               }, "+ AÑADIR OTRO RECESO")                          ]),                          React.createElement('button', { onClick: () => setView('main'), className: "w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg" }, "APLICAR CAMBIOS")                      ])                  ])              ]);          }          return React.createElement('div', { className: "min-h-screen" }, [              React.createElement('nav', { className: "bg-white/90 backdrop-blur-md border-b border-slate-200 p-3 sticky top-0 z-50 no-print shadow-sm" }, [                  React.createElement('div', { className: "container mx-auto flex flex-wrap justify-between items-center gap-4" }, [                      React.createElement('div', { className: "flex items-center gap-2" }, [                          React.createElement('button', { onClick: () => setView('teachers'), className: "px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-black flex items-center gap-2" }, [React.createElement('i', { 'data-lucide': "users", className: "w-4 h-4" }), "PLANTILLA"]),                          React.createElement('button', { onClick: () => setView('config'), className: "p-2 bg-slate-100 rounded-xl" }, React.createElement('i', { 'data-lucide': "settings", className: "w-4 h-4" })),                      ]),                      React.createElement('div', { className: "flex items-center gap-2" }, [                          ['1','2','3'].map(g => React.createElement('button', {                               key: g,                               onClick: () => setCurrentGrade(g),                              className: `px-4 py-1.5 rounded-lg text-xs font-black transition-all ${currentGrade === g ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`                          }, `${g}°`)),                          ['A','B','C','D','E'].map(g => React.createElement('button', {                               key: g,                               onClick: () => setCurrentGroup(g),                              className: `px-4 py-1.5 rounded-lg text-xs font-black transition-all ${currentGroup === g ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`                          }, g))                      ]),                      React.createElement('button', {                           onClick: handlePrint,                          className: "px-6 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all"                       }, [React.createElement('i', { 'data-lucide': "printer", className: "w-4 h-4" }), "IMPRIMIR / PDF"])                  ])              ]),              React.createElement('main', { className: "container mx-auto p-4 md:p-6 print-container" }, [                  React.createElement('div', { className: "bg-white p-6 rounded-t-3xl border-x border-t border-slate-200" }, [                      React.createElement('input', {                          className: "w-full text-xl font-black text-slate-800 outline-none text-center uppercase border-b border-transparent focus:border-indigo-100 pb-2",                          value: schoolData.nombre,                          onChange: e => setSchoolData({...schoolData, nombre: e.target.value.toUpperCase()})                      }),                      React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-center" }, [                          React.createElement('div', {}, [                              React.createElement('label', { className: "text-[9px] font-black text-slate-400 uppercase" }, "Grado y Grupo"),                              React.createElement('div', { className: "font-black text-indigo-600 text-lg" }, `${currentGrade}° "${currentGroup}"`)                          ]),                          React.createElement('div', {}, [                              React.createElement('label', { className: "text-[9px] font-black text-slate-400 uppercase" }, "Taller / Tecnología"),                              React.createElement('input', {                                   placeholder: "ESPECIFIQUE TALLER",                                  className: "text-center font-black text-slate-800 border-b-2 border-slate-100 outline-none w-full uppercase text-xs focus:border-indigo-200",                                  value: schoolData.talleres[groupId] || "",                                  onChange: e => setSchoolData({...schoolData, talleres: {...schoolData.talleres, [groupId]: e.target.value.toUpperCase()}})                              })                          ]),                          React.createElement('div', {}, [                              React.createElement('label', { className: "text-[9px] font-black text-slate-400 uppercase" }, "Ciclo Escolar"),                              React.createElement('input', {        type: "text",        value: schoolData.cicloEscolar || "2024 - 2025",        onChange: e => setSchoolData({...schoolData, cicloEscolar: e.target.value.toUpperCase()}),        className: "w-full text-center font-black text-slate-600 border-b-2 border-slate-100 focus:border-indigo-200 text-lg outline-none"    })                        ])                      ])                  ]),                  React.createElement('div', { className: "bg-white border border-slate-200 overflow-hidden" }, [                      React.createElement('div', { className: "overflow-x-auto" }, [                          React.createElement('table', { className: "w-full border-collapse" }, [                              React.createElement('thead', {}, [                                  React.createElement('tr', { className: "bg-slate-900 text-white" }, [                                      React.createElement('th', { className: "p-3 text-[9px] font-black w-24 border-r border-white/10" }, "HORA"),                                      ...days.map(d => React.createElement('th', { key: d, className: "p-3 text-[9px] font-black uppercase" }, d))                                  ])                              ]),                              React.createElement('tbody', {}, scheduleTimes.map((time, i) => {                                  const mod = i + 1;                                  const rows = [                                      React.createElement('tr', { key: mod }, [                                          React.createElement('td', { className: "p-2 border border-slate-100 text-center bg-slate-50/30" }, [                                              React.createElement('div', { className: "text-[10px] font-black text-slate-700" }, time.start),                                              React.createElement('div', { className: "text-[8px] font-bold text-slate-400" }, time.end)                                          ]),                                          ...days.map(day => {                                              const cellData = horarios[groupId]?.[`${day}-${mod}`] || { materia: "", maestro: "" };                                              return React.createElement('td', { key: day, className: "p-1 border border-slate-100 min-w-[120px]" }, [                                                  React.createElement('div', { className: "flex flex-col gap-1" }, [                                                      React.createElement('select', {                                                          value: cellData.materia,                                                          onChange: e => updateCell(day, mod, 'materia', e.target.value),                                                          className: "w-full p-1 text-[8px] font-black rounded border-none bg-transparent custom-select outline-none"                                                      }, [                                                          React.createElement('option', { value: "" }, "- MATERIA -"),                                                          ...MATERIAS.map(m => React.createElement('option', { key: m, value: m }, m))                                                      ]),                                                      React.createElement('select', {                                                          value: cellData.maestro,                                                          onChange: e => updateCell(day, mod, 'maestro', e.target.value),                                                          className: `w-full p-0.5 text-[7px] font-bold rounded border-none outline-none ${cellData.maestro ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-300'}`                                                      }, [                                                          React.createElement('option', { value: "" }, "DOCENTE..."),                                                          ...teacherList.map(t => React.createElement('option', { key: t, value: t }, t))                                                      ])                                                  ])                                              ]);                                          })                                      ])                                  ];                                  const r = config.recesos.find(rec => rec.modulo === mod);                                  if (r) {                                      rows.push(React.createElement('tr', { key: `r-${mod}`, className: "bg-slate-50" }, [                                          React.createElement('td', { className: "p-1.5 border border-slate-200 text-center font-black text-[8px] text-slate-400" }, "RECESO"),                                          React.createElement('td', { colSpan: 5, className: "p-1.5 border border-slate-200 text-center font-black text-[8px] text-slate-400 uppercase tracking-[1em]" }, `RECESO ${r.duracion} MIN`)                                      ]));                                  }                                  return rows;                              }))                          ])                      ])                  ]),                  React.createElement('div', { className: "p-8 bg-white border-x border-b border-slate-200 rounded-b-3xl" }, [                      React.createElement('div', { className: "grid grid-cols-2 gap-32 mt-12 mb-8" }, [                          React.createElement('div', { className: "text-center" }, [                              React.createElement('div', { className: "border-t-2 border-slate-900 mx-auto w-64 mb-2 signature-box" }),                              React.createElement('p', { className: "text-[9px] font-black text-slate-800 uppercase" }, "Subdirector Operativo")                          ]),                          React.createElement('div', { className: "text-center" }, [                              React.createElement('div', { className: "border-t-2 border-slate-900 mx-auto w-64 mb-2 signature-box" }),                              React.createElement('p', { className: "text-[9px] font-black text-slate-800 uppercase" }, "Director del Plantel")                          ])                      ]),                      React.createElement('div', { className: "text-center mt-12" }, [                          React.createElement('p', { className: "text-[7px] font-black text-slate-300 tracking-[0.2em] uppercase" }, `SISTEMA INSTITUCIONAL DE HORARIOS | ${AUTHOR}`)                      ])                  ])              ])          ]);      };      const root = ReactDOM.createRoot(document.getElementById('root'));      root.render(React.createElement(App));  </script></body>  </html>  
