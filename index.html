@@ -1,68 +1,58 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VMTS Horarios Pro - Edición Institucional</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React UMD -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/lucide.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VMTS Horarios Pro - Edición Institucional</title>
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-    body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-    @media print {
-      .no-print { display: none !important; }
-      body { background: white !important; padding: 0 !important; margin: 0 !important; }
-      .print-container { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 10mm !important; }
-      table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
-      th, td { border: 1px solid #000 !important; font-size: 8pt !important; padding: 4px !important; }
-      .bg-indigo-600 { background-color: #4f46e5 !important; color: white !important; -webkit-print-color-adjust: exact; }
-      .signature-box { border-top: 1px solid black !important; }
-      .footer-logo { position: absolute; bottom: 5mm; right: 5mm; width: 24px; height: 24px; }
-    }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
 
-    .custom-select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236366f1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.1rem center;
-      background-size: 0.6rem;
-    }
-  </style>
+body { font-family: 'Inter', sans-serif; margin:0; padding:0; background-color: #eef2f7; }
+.no-print { display: block; }
+.fixed-header { position: fixed; top:0; left:0; right:0; background:white; z-index:50; box-shadow:0 2px 5px rgba(0,0,0,0.1); padding:0.5rem 1rem; display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem; }
+.main-container { margin-top:5rem; padding:1rem; }
+.table-container { overflow-x:auto; overflow-y:auto; max-height:65vh; background:white; border-radius:0.5rem; border:1px solid #d1d5db; padding:0.5rem; }
+table { border-collapse: collapse; width:100%; }
+th, td { border:1px solid #d1d5db; padding:0.25rem; text-align:center; }
+.bg-header { background-color:#1e3a8a; color:white; }
+.select-materia, .select-maestro { width:100%; font-size:0.7rem; font-weight:bold; border:none; outline:none; background-color:#f8fafc; padding:0.2rem; border-radius:0.25rem; }
+input.editable { width:100%; text-align:center; border-bottom:2px solid #1e3a8a; font-weight:bold; text-transform:uppercase; outline:none; }
+.footer-logo { position:absolute; bottom:5mm; right:5mm; width:24px; height:24px; }
+
+@media print {
+  .no-print, .fixed-header { display:none; }
+  body { background:white; padding:0; margin:0; }
+  .print-container { padding:10mm; width:100%; }
+  table, th, td { border:1px solid #000; font-size:8pt; }
+  .signature-box { border-top:1px solid black; }
+  .footer-logo { position:absolute; bottom:5mm; right:5mm; width:24px; height:24px; }
+}
+</style>
 </head>
 <body>
 
-<div class="p-4 no-print flex gap-2 mb-4">
-  <button onclick="guardarDatos()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold flex items-center gap-2">
-    💾 Guardar
-  </button>
-  <button onclick="exportarExcel()" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold flex items-center gap-2">
-    📊 Exportar a Excel
-  </button>
-  <button onclick="window.print()" class="px-4 py-2 bg-indigo-800 text-white rounded-lg font-bold flex items-center gap-2">
-    🖨 Imprimir / PDF
-  </button>
+<div class="fixed-header no-print">
+  <button onclick="guardarDatos()" class="px-4 py-2 bg-blue-700 text-white rounded-lg font-bold">💾 Guardar</button>
+  <button onclick="exportarExcel()" class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold">📊 Exportar a Excel</button>
+  <button onclick="window.print()" class="px-4 py-2 bg-indigo-800 text-white rounded-lg font-bold">🖨 Imprimir / PDF</button>
 </div>
 
-<div id="root"></div>
+<div id="root" class="main-container"></div>
 
 <script>
 const { useState, useEffect } = React;
-
-// Datos iniciales
 const MATERIAS = ["LENGUA MATERNA","MATEMÁTICAS","INGLÉS","CIENCIAS (BIO)","CIENCIAS (FÍS)","CIENCIAS (QUÍ)","HISTORIA","GEOGRAFÍA","FORMACIÓN CÍVICA","ARTES","EDUCACIÓN FÍSICA","TECNOLOGÍA","VIDA SALUDABLE","SOCIOEMOCIONAL","CODISEÑO"];
 const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
 
 function App() {
   const [currentGrade, setCurrentGrade] = useState('1');
   const [currentGroup, setCurrentGroup] = useState('A');
+  const [view, setView] = useState('main'); // main o docentes
 
   const [schoolData, setSchoolData] = useState(() => {
     const saved = JSON.parse(localStorage.getItem('vmts_school_data'));
@@ -112,134 +102,107 @@ function App() {
     modulo: i + 1
   }));
 
-  return (
-    React.createElement('main', {className:"container mx-auto p-4 md:p-6 print-container"}, 
-      React.createElement('div', {className:"bg-white p-6 rounded-t-3xl border-x border-t border-slate-200 mb-6"}, 
-        React.createElement('input', {
-          className:"w-full text-xl font-black text-slate-800 outline-none text-center uppercase border-b border-transparent focus:border-indigo-100 pb-2",
-          value: schoolData.nombre,
-          onChange: e => setSchoolData({...schoolData, nombre: e.target.value.toUpperCase()})
-        }),
-        React.createElement('div', {className:"grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-center"},
-          React.createElement('div', {}, [
-            React.createElement('label', {className:"text-[9px] font-black text-slate-400 uppercase"}, "Grado y Grupo"),
-            React.createElement('div', {className:"font-black text-indigo-600 text-lg"}, `${currentGrade}° "${currentGroup}"`)
-          ]),
-          React.createElement('div', {}, [
-            React.createElement('label', {className:"text-[9px] font-black text-slate-400 uppercase"}, "Taller / Tecnología"),
-            React.createElement('input', {
-              placeholder: "ESPECIFIQUE TALLER",
-              className:"text-center font-black text-slate-800 border-b-2 border-slate-100 outline-none w-full uppercase text-xs focus:border-indigo-200",
-              value: schoolData.talleres[groupId] || "",
-              onChange: e => setSchoolData({...schoolData, talleres: {...schoolData.talleres, [groupId]: e.target.value.toUpperCase()}})
-            })
-          ]),
-          React.createElement('div', {}, [
-            React.createElement('label', {className:"text-[9px] font-black text-slate-400 uppercase"}, "Ciclo Escolar"),
-            React.createElement('input', {
-              type: "text",
-              className:"w-full text-center font-black text-slate-600 border-b-2 border-slate-100 focus:border-indigo-200 text-lg outline-none",
-              value: schoolData.cicloEscolar,
-              onChange: e => setSchoolData({...schoolData, cicloEscolar: e.target.value.toUpperCase()})
-            })
-          ])
-        )
-      ),
-      React.createElement('div', {className:"bg-white border border-slate-200 overflow-hidden mb-6"},
-        React.createElement('div', {className:"overflow-x-auto"},
-          React.createElement('table', {className:"w-full border-collapse"},
-            React.createElement('thead', {},
-              React.createElement('tr', {className:"bg-slate-900 text-white"},
-                React.createElement('th', {className:"p-3 text-[9px] font-black w-24 border-r border-white/10"}, "HORA"),
-                DIAS.map(d => React.createElement('th', {key:d,className:"p-3 text-[9px] font-black uppercase"}, d))
-              )
-            ),
-            React.createElement('tbody', {},
-              scheduleTimes.map((time, i) => {
-                const mod = i + 1;
-                return React.createElement('tr', {key:mod},
-                  React.createElement('td', {className:"p-2 border border-slate-100 text-center bg-slate-50/30"},
-                    React.createElement('div', {className:"text-[10px] font-black text-slate-700"}, time.start),
-                    React.createElement('div', {className:"text-[8px] font-bold text-slate-400"}, time.end)
-                  ),
-                  DIAS.map(day => {
-                    const cellData = horarios[groupId]?.[`${day}-${mod}`] || { materia: "", maestro: "" };
-                    return React.createElement('td', {key:day,className:"p-1 border border-slate-100 min-w-[120px]"},
-                      React.createElement('div', {className:"flex flex-col gap-1"},
-                        React.createElement('select', {
-                          value: cellData.materia,
-                          onChange: e => updateCell(day, mod, 'materia', e.target.value),
-                          className:"w-full p-1 text-[8px] font-black rounded border-none bg-transparent custom-select outline-none"
-                        },
-                          React.createElement('option',{value:""},"- MATERIA -"),
-                          MATERIAS.map(m => React.createElement('option',{key:m,value:m}, m))
-                        ),
-                        React.createElement('select', {
-                          value: cellData.maestro,
-                          onChange: e => updateCell(day, mod, 'maestro', e.target.value),
-                          className:`w-full p-0.5 text-[7px] font-bold rounded border-none outline-none ${cellData.maestro ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-300'}`
-                        },
-                          React.createElement('option',{value:""},"DOCENTE..."),
-                          teacherList.map(t => React.createElement('option',{key:t,value:t}, t))
-                        )
-                      )
+  if(view === 'docentes') {
+    return React.createElement('div',{className:"p-4 bg-white rounded shadow"},
+      React.createElement('h2',{className:"text-xl font-bold mb-4"},"Gestión de Docentes"),
+      teacherList.map((t,i)=>React.createElement('div',{key:i,className:"flex gap-2 mb-2 items-center"},
+        React.createElement('input',{className:"editable flex-1", value:t, onChange:e=>{ const nl=[...teacherList]; nl[i]=e.target.value.toUpperCase(); setTeacherList(nl); }}),
+        React.createElement('button',{className:"bg-red-600 text-white px-2 py-1 rounded", onClick:()=>setTeacherList(teacherList.filter((_,idx)=>idx!==i))},"Eliminar")
+      )),
+      React.createElement('button',{className:"bg-green-600 text-white px-4 py-2 rounded mt-2", onClick:()=>setTeacherList([...teacherList,"NUEVO DOCENTE"])},"+ Agregar Docente"),
+      React.createElement('button',{className:"bg-blue-700 text-white px-4 py-2 rounded mt-4", onClick:()=>setView('main')},"Volver")
+    );
+  }
+
+  return React.createElement('div', {className:"print-container"},
+    React.createElement('div', {className:"mb-4 flex justify-between items-center"},
+      React.createElement('button',{className:"bg-indigo-700 text-white px-4 py-2 rounded", onClick:()=>setView('docentes')},"Gestionar Docentes")
+    ),
+    React.createElement('div', {className:"mb-4"},
+      React.createElement('input', {className:"editable text-2xl w-full mb-2", value: schoolData.nombre, onChange:e=>setSchoolData({...schoolData,nombre:e.target.value.toUpperCase()})}),
+      React.createElement('div', {className:"grid grid-cols-1 md:grid-cols-3 gap-4 text-center"},
+        React.createElement('div', {}, [
+          React.createElement('label', {className:"text-xs font-bold text-slate-500 uppercase"}, "Grado y Grupo"),
+          React.createElement('div', {className:"font-bold text-blue-700"}, `${currentGrade}° "${currentGroup}"`)
+        ]),
+        React.createElement('div', {}, [
+          React.createElement('label', {className:"text-xs font-bold text-slate-500 uppercase"}, "Taller / Tecnología"),
+          React.createElement('input',{className:"editable text-sm", placeholder:"ESPECIFIQUE TALLER", value:schoolData.talleres[groupId]||"", onChange:e=>setSchoolData({...schoolData,talleres:{...schoolData.talleres,[groupId]:e.target.value.toUpperCase()}})})
+        ]),
+        React.createElement('div', {}, [
+          React.createElement('label', {className:"text-xs font-bold text-slate-500 uppercase"}, "Ciclo Escolar"),
+          React.createElement('input',{className:"editable text-lg", value:schoolData.cicloEscolar, onChange:e=>setSchoolData({...schoolData,cicloEscolar:e.target.value.toUpperCase()})})
+        ])
+      )
+    ),
+    React.createElement('div',{className:"table-container mb-6"},
+      React.createElement('table',{},
+        React.createElement('thead',{},
+          React.createElement('tr',{className:"bg-header"},
+            React.createElement('th',{}, "HORA"),
+            DIAS.map(d=>React.createElement('th',{key:d}, d))
+          )
+        ),
+        React.createElement('tbody',{},
+          scheduleTimes.map((time,i)=>{
+            const mod=i+1;
+            return React.createElement('tr',{key:mod},
+              React.createElement('td',{className:"font-bold bg-slate-50"}, `${time.start} - ${time.end}`),
+              DIAS.map(day=>{
+                const cellData=horarios[groupId]?.[`${day}-${mod}`]||{materia:"",maestro:""};
+                return React.createElement('td',{key:day},
+                  React.createElement('div',{className:"flex flex-col gap-1"},
+                    React.createElement('select',{className:"select-materia", value:cellData.materia, onChange:e=>updateCell(day,mod,'materia',e.target.value)},
+                      React.createElement('option',{value:""},"- MATERIA -"),
+                      MATERIAS.map(m=>React.createElement('option',{key:m,value:m},m))
+                    ),
+                    React.createElement('select',{className:"select-maestro", value:cellData.maestro, onChange:e=>updateCell(day,mod,'maestro',e.target.value)},
+                      React.createElement('option',{value:""},"DOCENTE..."),
+                      teacherList.map(t=>React.createElement('option',{key:t,value:t},t))
                     )
-                  })
+                  )
                 )
               })
             )
-          )
+          })
+        )
+      )
+    ),
+    React.createElement('div',{className:"bg-white p-6 rounded shadow relative"},
+      React.createElement('div',{className:"grid grid-cols-2 gap-16 text-center mb-6"},
+        React.createElement('div',{},
+          React.createElement('input',{className:"editable", value:schoolData.subdirector, onChange:e=>setSchoolData({...schoolData,subdirector:e.target.value})}),
+          React.createElement('p',{}, "Subdirector Operativo")
+        ),
+        React.createElement('div',{},
+          React.createElement('input',{className:"editable", value:schoolData.director, onChange:e=>setSchoolData({...schoolData,director:e.target.value})}),
+          React.createElement('p',{}, "Director del Plantel")
         )
       ),
-      React.createElement('div', {className:"p-8 bg-white border-x border-b border-slate-200 rounded-b-3xl"},
-        React.createElement('div', {className:"grid grid-cols-2 gap-32 mt-12 mb-8"},
-          React.createElement('div', {className:"text-center"},
-            React.createElement('input', {
-              className:"w-64 text-center font-black text-slate-800 border-b-2 border-slate-900 mb-2 uppercase outline-none",
-              value: schoolData.subdirector,
-              onChange: e => setSchoolData({...schoolData, subdirector: e.target.value})
-            }),
-            React.createElement('p',{className:"text-[9px] font-black text-slate-800 uppercase"}, "Subdirector Operativo")
-          ),
-          React.createElement('div', {className:"text-center"},
-            React.createElement('input', {
-              className:"w-64 text-center font-black text-slate-800 border-b-2 border-slate-900 mb-2 uppercase outline-none",
-              value: schoolData.director,
-              onChange: e => setSchoolData({...schoolData, director: e.target.value})
-            }),
-            React.createElement('p',{className:"text-[9px] font-black text-slate-800 uppercase"}, "Director del Plantel")
-          )
-        ),
-        React.createElement('div', {className:"text-center mt-12 relative"},
-          React.createElement('p',{className:"text-[7px] font-black text-slate-300 tracking-[0.2em] uppercase"}, "SISTEMA INSTITUCIONAL DE HORARIOS"),
-          React.createElement('img', {src:"vmts.png", className:"footer-logo"})
-        )
+      React.createElement('div',{className:"text-center relative"},
+        React.createElement('p',{className:"text-xs uppercase font-bold text-slate-400"},"SISTEMA INSTITUCIONAL DE HORARIOS"),
+        React.createElement('img',{src:"vmts.png", className:"footer-logo"})
       )
     )
   );
 }
 
-// Funciones guardar y exportar
-function guardarDatos() {
-  alert("Los datos ya se guardan automáticamente en esta versión con React.");
-}
-
+// Guardar y exportar
+function guardarDatos() { alert("Los datos se guardan automáticamente en localStorage."); }
 function exportarExcel() {
-  const datos = [];
-  const tables = document.querySelectorAll("table tbody tr");
-  tables.forEach(tr => {
-    const row = Array.from(tr.querySelectorAll("td")).map(td => td.innerText || td.querySelector("select")?.value || "");
+  const datos=[];
+  document.querySelectorAll("table tbody tr").forEach(tr=>{
+    const row=Array.from(tr.querySelectorAll("td")).map(td=>td.innerText||td.querySelector("select")?.value||"");
     datos.push(row.join(","));
   });
-  const blob = new Blob([datos.join("\n")], { type: "text/csv;charset=utf-8;" });
-  const enlace = document.createElement("a");
-  enlace.href = URL.createObjectURL(blob);
-  enlace.download = "VMTS_Horarios.csv";
+  const blob=new Blob([datos.join("\n")],{type:"text/csv;charset=utf-8;"});
+  const enlace=document.createElement("a");
+  enlace.href=URL.createObjectURL(blob);
+  enlace.download="VMTS_Horarios.csv";
   enlace.click();
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 </script>
-
 </body>
 </html>
